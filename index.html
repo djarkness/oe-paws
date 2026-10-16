@@ -107,7 +107,6 @@
             gap: 24px;
         }
 
-        /* Панель управления */
         .controls-bar { 
             display: flex; 
             gap: 16px; 
@@ -117,7 +116,14 @@
             margin-bottom: 24px;
         }
         
-        .search-controls { position: relative; flex: 1; min-width: 250px; display: flex; gap: 12px; align-items: center; }
+        .search-controls { 
+            position: relative; 
+            flex: 1; 
+            min-width: 250px; 
+            display: flex; 
+            gap: 12px; 
+            align-items: center; 
+        }
 
         .sort-controls {
             flex-shrink: 0;
@@ -203,12 +209,10 @@
             text-decoration: underline;
         }
 
-        /* Подсветка строки */
         tr.highlight-target td {
             background-color: rgba(100, 108, 255, 0.35) !important;
         }
 
-        /* Дочерние строки аккордеона */
         .sub-accordion-row {
             display: none;
             background-color: var(--vp-c-bg);
@@ -217,7 +221,6 @@
             display: table-row;
         }
 
-        /* Кнопка аккордеона */
         .toggle-sub-btn {
             background: transparent; border: none; color: var(--vp-c-text-1);
             cursor: pointer; font-weight: 500; font-size: inherit;
@@ -230,7 +233,6 @@
         .tab-content { display: none; }
         .tab-content.active { display: flex; flex-direction: column; }
 
-        /* Стили модального окна */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -350,7 +352,6 @@
             overflow: hidden;
         }
 
-        /* Стили для таймера */
         .timer-text {
             font-size: 0.85rem;
             color: var(--vp-c-brand-2);
@@ -379,7 +380,6 @@
         </main>
     </div>
 
-    <!-- Модальное окно для предложения лапок -->
     <div class="modal-overlay" id="suggestModal" onclick="handleOutsideClick(event)">
         <div class="modal-box">
             <div class="modal-header">
@@ -402,15 +402,12 @@
                     <input type="checkbox" id="readCheckbox" onchange="toggleCheckbox()" disabled>
                     <span>Я ознакомился(-ась) с правилами и условиями</span>
                 </label>
-                <!-- Замени ссылку на свою (например, на форму Google Forms, тему на форуме или твой Discord) -->
                 <a id="submitLink" href="https://discord.com/channels/300276721075355649/1434520380550152202" target="_blank" rel="noopener noreferrer" class="modal-submit-btn disabled" onclick="handleProceed(event)">Перейти к отправке</a>
             </div>
         </div>
     </div>
 
     <script>
-        const { ipcRenderer } = require('electron');
-
         const mdFiles = [
             { id: 'paws1', file: 'paws1.md' },
             { id: 'paws2', file: 'paws2.md' },
@@ -431,7 +428,11 @@
             for (let i = 0; i < mdFiles.length; i++) {
                 const item = mdFiles[i];
                 try {
-                    const text = await ipcRenderer.invoke('read-md-file', item.file);
+                    // Используем стандартный браузерный fetch для загрузки .md файлов
+                    const response = await fetch(item.file);
+                    if (!response.ok) throw new Error(`Не удалось загрузить ${item.file}`);
+                    const text = await response.text();
+                    
                     const parsed = parseMarkdownTable(text);
                     appData[item.id] = parsed;
 
@@ -488,12 +489,10 @@
             }
         }
 
-        // Логика модального окна и таймера
         function openModal() {
             document.getElementById('suggestModal').classList.add('active');
-            document.body.classList.add('modal-open'); // Блокируем скролл страницы
+            document.body.classList.add('modal-open');
             
-            // Сбрасываем элементы в заблокированное состояние
             const checkbox = document.getElementById('readCheckbox');
             checkbox.checked = false;
             checkbox.disabled = true;
@@ -501,7 +500,6 @@
             document.getElementById('checkboxContainer').style.pointerEvents = 'none';
             document.getElementById('submitLink').classList.add('disabled');
 
-            // Запускаем таймер на 10 секунд
             let timeLeft = 10;
             const timerCountElem = document.getElementById('timerCount');
             const timerContainer = document.getElementById('timerContainer');
@@ -516,8 +514,7 @@
 
                 if (timeLeft <= 0) {
                     clearInterval(countdownInterval);
-                    timerContainer.style.display = 'none'; // Скрываем текст таймера
-                    // Разблокируем чекбокс
+                    timerContainer.style.display = 'none';
                     checkbox.disabled = false;
                     document.getElementById('checkboxContainer').style.opacity = '1';
                     document.getElementById('checkboxContainer').style.pointerEvents = 'auto';
@@ -527,8 +524,8 @@
 
         function closeModal() {
             document.getElementById('suggestModal').classList.remove('active');
-            document.body.classList.remove('modal-open'); // Возвращаем скролл страницы
-            if (countdownInterval) clearInterval(countdownInterval); // Останавливаем таймер при закрытии
+            document.body.classList.remove('modal-open');
+            if (countdownInterval) clearInterval(countdownInterval);
         }
 
         function handleOutsideClick(event) {
