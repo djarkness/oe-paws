@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Таблицы ачивок</title>
+    <style>
+        :root {
+            --vp-c-bg: #1b1b1f;
+            --vp-c-bg-alt: #161618;
+            --vp-c-bg-elv: #202127;
+            --vp-c-text-1: rgba(255, 255, 245, .86);
+            --vp-c-text-2: rgba(235, 235, 245, .6);
+            --vp-c-brand-1: #646cff;
+            --vp-c-brand-2: #747bff;
+            --vp-c-divider: rgba(84, 84, 94, 0.4);
+            --vp-nav-height: 64px;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--vp-c-bg);
+            color: var(--vp-c-text-1);
+            line-height: 1.6;
+        }
+
+        .Layout { min-height: 100vh; display: flex; flex-direction: column; }
+
+        .VPNav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background-color: var(--vp-c-bg);
+            border-bottom: 1px solid var(--vp-c-divider);
+            height: var(--vp-nav-height);
+        }
+
+        .VPNavBar {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            padding: 0 32px;
+            max-width: 1400px;
+            margin: 0 auto;
+            justify-content: space-between;
+        }
+
+        .VPNavBarTitle .title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--vp-c-text-1);
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .nav-right-area {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .nav-tabs { display: flex; gap: 8px; align-items: center; }
+
+        .nav-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--vp-c-text-2);
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .nav-btn:hover { color: var(--vp-c-text-1); background-color: var(--vp-c-bg-alt); }
+        .nav-btn.active { color: var(--vp-c-text-1); background-color: var(--vp-c-bg-alt); border-color: var(--vp-c-brand-1); }
+
+        .suggest-btn {
+            background-color: var(--vp-c-brand-1);
+            border: 1px solid var(--vp-c-brand-1);
+            color: #fff;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .suggest-btn:hover {
+            background-color: var(--vp-c-brand-2);
+            border-color: var(--vp-c-brand-2);
+        }
+
+        .VPContent {
+            flex: 1;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* Панель управления */
+        .controls-bar { 
+            display: flex; 
+            gap: 16px; 
+            align-items: center; 
+            flex-wrap: wrap; 
+            justify-content: space-between; 
+            margin-bottom: 24px;
+        }
+        
+        .search-controls { position: relative; flex: 1; min-width: 250px; display: flex; gap: 12px; align-items: center; }
+
+        .sort-controls {
+            flex-shrink: 0;
+        }
+
+        .search-box {
+            background: var(--vp-c-bg-alt);
+            border: 1px solid var(--vp-c-divider);
+            color: var(--vp-c-text-1);
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            outline: none;
+            width: 100%;
+        }
+        .search-box:focus { border-color: var(--vp-c-brand-1); }
+
+        .search-dropdown {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0; right: 0;
+            background: var(--vp-c-bg-elv);
+            border: 1px solid var(--vp-c-divider);
+            border-radius: 8px;
+            box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+            list-style: none;
+            margin: 0; padding: 6px;
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .search-dropdown.active { display: flex; }
+
+        .search-dropdown-item {
+            padding: 10px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            color: var(--vp-c-text-1);
+            transition: background 0.2s;
+        }
+        .search-dropdown-item:hover { background-color: var(--vp-c-bg-alt); color: var(--vp-c-brand-2); }
+        .search-item-tab { font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; background: var(--vp-c-bg-alt); color: var(--vp-c-text-2); border: 1px solid var(--vp-c-divider); }
+
+        .sort-select {
+            background: var(--vp-c-bg-alt);
+            border: 1px solid var(--vp-c-divider);
+            color: var(--vp-c-text-1);
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .table-container { width: 100%; overflow-x: auto; border: 1px solid var(--vp-c-divider); border-radius: 8px; background: var(--vp-c-bg-alt); }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.95rem; }
+        
+        th, td { padding: 12px 16px; border-bottom: 1px solid var(--vp-c-divider); transition: background-color 0.3s; }
+        
+        thead {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        
+        th { 
+            background-color: var(--vp-c-bg-elv); 
+            font-weight: 600; 
+            color: var(--vp-c-text-1); 
+        }
+        tr:last-child td { border-bottom: none; }
+
+        td a {
+            color: var(--vp-c-brand-2);
+            text-decoration: none;
+        }
+        td a:hover {
+            text-decoration: underline;
+        }
+
+        /* Подсветка строки */
+        tr.highlight-target td {
+            background-color: rgba(100, 108, 255, 0.35) !important;
+        }
+
+        /* Дочерние строки аккордеона */
+        .sub-accordion-row {
+            display: none;
+            background-color: var(--vp-c-bg);
+        }
+        .sub-accordion-row.open {
+            display: table-row;
+        }
+
+        /* Кнопка аккордеона */
+        .toggle-sub-btn {
+            background: transparent; border: none; color: var(--vp-c-text-1);
+            cursor: pointer; font-weight: 500; font-size: inherit;
+            display: inline-flex; align-items: center; gap: 8px; padding: 0;
+            text-decoration: none !important;
+        }
+        .toggle-sub-btn span.arrow { transition: transform 0.25s ease; color: var(--vp-c-text-2); display: inline-block; }
+        .sub-count { color: var(--vp-c-text-2); font-size: 0.85em; margin-left: 8px; font-weight: normal; }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: flex; flex-direction: column; }
+
+        /* Стили модального окна */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-box {
+            background-color: var(--vp-c-bg-elv);
+            border: 1px solid var(--vp-c-divider);
+            border-radius: 12px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--vp-c-divider);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: var(--vp-c-text-1);
+        }
+
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: var(--vp-c-text-2);
+            font-size: 1.5rem;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .modal-close:hover {
+            color: var(--vp-c-text-1);
+        }
+
+        .modal-body {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            font-size: 0.95rem;
+            color: var(--vp-c-text-2);
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .modal-body p {
+            margin: 0;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--vp-c-divider);
+            background-color: var(--vp-c-bg-alt);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            color: var(--vp-c-text-1);
+            font-size: 0.9rem;
+            user-select: none;
+        }
+
+        .checkbox-label input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--vp-c-brand-1);
+        }
+
+        .modal-submit-btn {
+            background-color: var(--vp-c-brand-1);
+            border: none;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            transition: background 0.2s, opacity 0.2s;
+            display: block;
+        }
+        .modal-submit-btn:hover {
+            background-color: var(--vp-c-brand-2);
+        }
+        .modal-submit-btn.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+            cursor: not-allowed;
+        }
+        body.modal-open {
+            overflow: hidden;
+        }
+
+        /* Стили для таймера */
+        .timer-text {
+            font-size: 0.85rem;
+            color: var(--vp-c-brand-2);
+            font-weight: 500;
+            margin-bottom: -4px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="Layout">
+        <header class="VPNav">
+            <div class="VPNavBar">
+                <div class="VPNavBarTitle">
+                    <a href="#" class="title"><span>Таблица Лапок 🐾🎮</span></a>
+                </div>
+                <div class="nav-right-area">
+                    <nav class="nav-tabs" id="navTabsContainer"></nav>
+                    <button class="suggest-btn" onclick="openModal()">Предложить лапки</button>
+                </div>
+            </div>
+        </header>
+
+        <main class="VPContent">
+            <div id="tablesContainer"></div>
+        </main>
+    </div>
+
+    <!-- Модальное окно для предложения лапок -->
+    <div class="modal-overlay" id="suggestModal" onclick="handleOutsideClick(event)">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>Предложения лапок</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Перед тем как предложить новую игру или достижение, пожалуйста, ознакомьтесь с условиями:</p>
+                <p>1. Убедитесь, что предлагаемая игра или достижение ещё не добавлены в основные списки таблиц.</p>
+                <p>2. Условие получения должно быть четко сформулировано, проверяемо и подкреплено скриншотом или ссылкой при необходимости, а так же обосновано.</p>
+                <p>3. Запрещено предлагать абсурдные или невыполнимые условия, нарушающие общие правила баланса рейтинга.</p>
+                <p>4. Рейтинг так же должен иметь обоснование.</p>
+                <p>❗ Шаг рейтинга в Потных лапках должен быть кратен пяти и не должен быть ниже нуля, но не должен превышать сотни баллов.</p>
+                <p>❗ Шаг рейтинга в Мега лапках должен быть кратен десяти и не должен быть ниже сотни баллов, но не должен превышать пятисот баллов.</p>
+                <p>❗ Шаг рейтинга в Сломанных лапках должен быть кратен пятидесяти и не должен быть ниже пятисот баллов, но не должен превышать тысячи баллов.</p>
+            </div>
+            <div class="modal-footer">
+                <div id="timerContainer" class="timer-text">Ознакомьтесь с правилами (осталось: <span id="timerCount">10</span> сек.)</div>
+                <label class="checkbox-label" id="checkboxContainer" style="opacity: 0.5; pointer-events: none;">
+                    <input type="checkbox" id="readCheckbox" onchange="toggleCheckbox()" disabled>
+                    <span>Я ознакомился(-ась) с правилами и условиями</span>
+                </label>
+                <!-- Замени ссылку на свою (например, на форму Google Forms, тему на форуме или твой Discord) -->
+                <a id="submitLink" href="https://discord.com/channels/300276721075355649/1434520380550152202" target="_blank" rel="noopener noreferrer" class="modal-submit-btn disabled" onclick="handleProceed(event)">Перейти к отправке</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { ipcRenderer } = require('electron');
+
+        const mdFiles = [
+            { id: 'paws1', file: 'paws1.md' },
+            { id: 'paws2', file: 'paws2.md' },
+            { id: 'paws3', file: 'paws3.md' }
+        ];
+
+        let appData = {};
+        let currentTabId = '';
+        let countdownInterval = null;
+
+        async function initApp() {
+            const navContainer = document.getElementById('navTabsContainer');
+            const mainContainer = document.getElementById('tablesContainer');
+
+            navContainer.innerHTML = '';
+            mainContainer.innerHTML = '';
+
+            for (let i = 0; i < mdFiles.length; i++) {
+                const item = mdFiles[i];
+                try {
+                    const text = await ipcRenderer.invoke('read-md-file', item.file);
+                    const parsed = parseMarkdownTable(text);
+                    appData[item.id] = parsed;
+
+                    if (i === 0) currentTabId = item.id;
+
+                    const btn = document.createElement('button');
+                    btn.className = `nav-btn ${i === 0 ? 'active' : ''}`;
+                    btn.textContent = parsed.title;
+                    btn.onclick = () => switchTab(item.id);
+                    navContainer.appendChild(btn);
+
+                    const tabContent = document.createElement('div');
+                    tabContent.id = 'tab-' + item.id;
+                    tabContent.className = `tab-content ${i === 0 ? 'active' : ''}`;
+                    tabContent.setAttribute('data-tab-name', parsed.title);
+                    
+                    tabContent.innerHTML = `
+                        <div class="controls-bar">
+                            <div class="search-controls">
+                                <input type="text" id="searchInput" class="search-box" placeholder="Поиск по названию игры..." oninput="handleSearchInput()" autocomplete="off">
+                                <ul id="searchDropdown" class="search-dropdown"></ul>
+                            </div>
+
+                            <div class="sort-controls">
+                                <select id="sortSelect" class="sort-select" onchange="applySort()">
+                                    <option value="default">Сортировка: по умолчанию</option>
+                                    <option value="desc">От большего к меньшему</option>
+                                    <option value="asc">От меньшего к большему</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th style="width: 100px;">Номер</th>
+                                        <th>Название игры</th>
+                                        <th>Условие получения</th>
+                                        <th style="width: 140px;">Балл рейтинга</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="table-body">
+                                    ${renderTableRows(parsed.rows, item.id)}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                    mainContainer.appendChild(tabContent);
+
+                } catch (err) {
+                    console.error("Ошибка загрузки файла:", err);
+                }
+            }
+        }
+
+        // Логика модального окна и таймера
+        function openModal() {
+            document.getElementById('suggestModal').classList.add('active');
+            document.body.classList.add('modal-open'); // Блокируем скролл страницы
+            
+            // Сбрасываем элементы в заблокированное состояние
+            const checkbox = document.getElementById('readCheckbox');
+            checkbox.checked = false;
+            checkbox.disabled = true;
+            document.getElementById('checkboxContainer').style.opacity = '0.5';
+            document.getElementById('checkboxContainer').style.pointerEvents = 'none';
+            document.getElementById('submitLink').classList.add('disabled');
+
+            // Запускаем таймер на 10 секунд
+            let timeLeft = 10;
+            const timerCountElem = document.getElementById('timerCount');
+            const timerContainer = document.getElementById('timerContainer');
+            timerContainer.style.display = 'block';
+            timerCountElem.textContent = timeLeft;
+
+            if (countdownInterval) clearInterval(countdownInterval);
+
+            countdownInterval = setInterval(() => {
+                timeLeft--;
+                timerCountElem.textContent = timeLeft;
+
+                if (timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                    timerContainer.style.display = 'none'; // Скрываем текст таймера
+                    // Разблокируем чекбокс
+                    checkbox.disabled = false;
+                    document.getElementById('checkboxContainer').style.opacity = '1';
+                    document.getElementById('checkboxContainer').style.pointerEvents = 'auto';
+                }
+            }, 1000);
+        }
+
+        function closeModal() {
+            document.getElementById('suggestModal').classList.remove('active');
+            document.body.classList.remove('modal-open'); // Возвращаем скролл страницы
+            if (countdownInterval) clearInterval(countdownInterval); // Останавливаем таймер при закрытии
+        }
+
+        function handleOutsideClick(event) {
+            if (event.target.id === 'suggestModal') {
+                closeModal();
+            }
+        }
+
+        function toggleCheckbox() {
+            const checkbox = document.getElementById('readCheckbox');
+            const submitBtn = document.getElementById('submitLink');
+            if (checkbox.checked) {
+                submitBtn.classList.remove('disabled');
+            } else {
+                submitBtn.classList.add('disabled');
+            }
+        }
+
+        function handleProceed(event) {
+            const checkbox = document.getElementById('readCheckbox');
+            if (!checkbox.checked) {
+                event.preventDefault();
+                alert('Пожалуйста, подтвердите, что вы ознакомились с правилами.');
+            } else {
+                closeModal();
+            }
+        }
+
+        function parseMarkdownLinks(text) {
+            if (!text) return '';
+            const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+            return text.replace(linkRegex, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+        }
+
+        function parseMarkdownTable(mdText) {
+            const lines = mdText.split(/\r?\n/);
+            let title = "Таблица";
+            let rawRows = [];
+
+            for (let rawLine of lines) {
+                const line = rawLine.replace(/[\u00A0\uFEFF]/g, ' ').trim();
+                if (!line) continue;
+
+                if (line.startsWith('#')) {
+                    title = line.replace(/#+/g, '').replace(/[\*_`]/g, '').trim();
+                    continue;
+                }
+
+                if (line.includes('|')) {
+                    const cells = line.split('|').map(c => c.replace(/[\u00A0\uFEFF]/g, ' ').trim()).filter(c => c !== '');
+                    
+                    if (cells.length > 0) {
+                        const firstCell = cells[0].replace(/[\*_`]/g, '').trim();
+                        if (firstCell.includes('---') || firstCell.includes('___')) continue;
+                        if (['№', 'no', 'номер', 'игра'].includes(firstCell.toLowerCase())) continue;
+
+                        const numStr = firstCell;
+                        const rawTitle = cells[1] ? cells[1].trim() : '';
+                        const rawCondition = cells[2] ? cells[2].trim() : '';
+                        
+                        const gameTitle = rawTitle.replace(/[\*_`]/g, '');
+                        const condition = parseMarkdownLinks(rawCondition);
+                        const titleWithLinks = parseMarkdownLinks(rawTitle);
+
+                        const rawRating = cells[3] ? cells[3].replace(/[\*_`]/g, '').trim() : '0';
+                        
+                        let finalRating = 0;
+                        let ratingDisplay = rawRating;
+
+                        if (rawRating.includes('-')) {
+                            const parts = rawRating.split('-');
+                            const low = parseFloat(parts[0]) || 0;
+                            finalRating = low;
+                            ratingDisplay = rawRating;
+                        } else {
+                            const ratingNum = parseFloat(rawRating);
+                            finalRating = isNaN(ratingNum) ? 0 : ratingNum;
+                            ratingDisplay = finalRating;
+                        }
+
+                        rawRows.push({
+                            numberStr: numStr,
+                            titleClean: gameTitle || 'Без названия',
+                            titleHtml: titleWithLinks || 'Без названия',
+                            condition: condition || '-',
+                            rating: finalRating,
+                            ratingDisplay: ratingDisplay
+                        });
+                    }
+                }
+            }
+
+            let rows = [];
+            let mainMap = {};
+
+            rawRows.forEach(item => {
+                if (!item.numberStr.includes('.')) {
+                    const mainRow = {
+                        mainNumber: item.numberStr,
+                        titleClean: item.titleClean,
+                        titleHtml: item.titleHtml,
+                        condition: item.condition,
+                        rating: item.rating,
+                        ratingDisplay: item.ratingDisplay,
+                        subItems: []
+                    };
+                    mainMap[item.numberStr] = mainRow;
+                    rows.push(mainRow);
+                }
+            });
+
+            rawRows.forEach(item => {
+                if (item.numberStr.includes('.')) {
+                    const parentNum = item.numberStr.split('.')[0];
+                    if (mainMap[parentNum]) {
+                        mainMap[parentNum].subItems.push({
+                            numberStr: item.numberStr,
+                            titleClean: item.titleClean,
+                            titleHtml: item.titleHtml,
+                            condition: item.condition,
+                            rating: item.rating,
+                            ratingDisplay: item.ratingDisplay
+                        });
+                    } else {
+                        const fallbackRow = {
+                            mainNumber: parentNum,
+                            titleClean: item.titleClean,
+                            titleHtml: item.titleHtml,
+                            condition: item.condition,
+                            rating: item.rating,
+                            ratingDisplay: item.ratingDisplay,
+                            subItems: []
+                        };
+                        mainMap[parentNum] = fallbackRow;
+                        rows.push(fallbackRow);
+                    }
+                }
+            });
+
+            return { title, rows };
+        }
+
+        function renderTableRows(rows, tabId) {
+            let html = '';
+            rows.forEach((row, index) => {
+                const subLen = row.subItems ? row.subItems.length : 0;
+                const hasMultipleSubs = subLen > 1;
+                const hasSingleSub = subLen === 1;
+                
+                const countBadge = hasMultipleSubs ? `<span class="sub-count">(${subLen})</span>` : '';
+                
+                const titleCellContent = hasMultipleSubs ? `
+                    <button class="toggle-sub-btn" onclick="toggleSub(this)">
+                        <span class="arrow">▶</span> 
+                        <span class="game-title">${row.titleHtml}</span> 
+                        ${countBadge}
+                    </button>
+                ` : `<span class="game-title">${row.titleHtml}</span>`;
+
+                const uniqueRowId = `${tabId}-row-${row.mainNumber}`;
+
+                html += `
+                    <tr data-id="${uniqueRowId}" data-rating="${row.rating}" data-original-index="${index}">
+                        <td>${row.mainNumber}.</td>
+                        <td>${titleCellContent}</td>
+                        <td>${row.condition}</td>
+                        <td class="game-rating">${row.ratingDisplay}</td>
+                    </tr>
+                `;
+
+                if (hasMultipleSubs) {
+                    row.subItems.forEach(sub => {
+                        const uniqueSubRowId = `${tabId}-row-${sub.numberStr.replace('.', '-')}`;
+                        html += `
+                            <tr class="sub-accordion-row" data-parent="${uniqueRowId}" data-id="${uniqueSubRowId}" data-rating="${sub.rating}">
+                                <td style="padding-left: 32px;">${sub.numberStr}</td>
+                                <td>${sub.titleHtml}</td>
+                                <td>${sub.condition}</td>
+                                <td class="game-rating">${sub.ratingDisplay}</td>
+                            </tr>
+                        `;
+                    });
+                } 
+                else if (hasSingleSub) {
+                    const sub = row.subItems[0];
+                    const uniqueSubRowId = `${tabId}-row-${sub.numberStr.replace('.', '-')}`;
+                    html += `
+                        <tr data-id="${uniqueSubRowId}" data-rating="${sub.rating}" data-original-index="${index}">
+                            <td>${sub.numberStr}</td>
+                            <td><span class="game-title">${sub.titleHtml}</span></td>
+                            <td>${sub.condition}</td>
+                            <td class="game-rating">${sub.ratingDisplay}</td>
+                        </tr>
+                    `;
+                }
+            });
+            return html;
+        }
+
+        function switchTab(tabId) {
+            currentTabId = tabId;
+            const tabs = Object.keys(appData);
+            document.querySelectorAll('.nav-btn').forEach((btn, idx) => {
+                btn.classList.toggle('active', tabs[idx] === tabId);
+            });
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById('tab-' + tabId).classList.add('active');
+        }
+
+        function toggleSub(btn) {
+            const row = btn.closest('tr');
+            const dataId = row.getAttribute('data-id');
+            const subRows = document.querySelectorAll(`.sub-accordion-row[data-parent="${dataId}"]`);
+            
+            if (subRows.length > 0) {
+                const isOpen = subRows[0].classList.toggle('open');
+                for (let i = 1; i < subRows.length; i++) {
+                    subRows[i].classList.toggle('open', isOpen);
+                }
+                const span = btn.querySelector('.arrow');
+                if (span) span.style.transform = isOpen ? 'rotate(90deg)' : 'rotate(0deg)';
+            }
+        }
+
+        function getAllItems() {
+            const items = [];
+            Object.keys(appData).forEach(tabId => {
+                const parsed = appData[tabId];
+                const tabName = parsed.title;
+                
+                parsed.rows.forEach(row => {
+                    const subLen = row.subItems ? row.subItems.length : 0;
+                    
+                    if (subLen === 1) {
+                        const sub = row.subItems[0];
+                        const uniqueSubRowId = `${tabId}-row-${sub.numberStr.replace('.', '-')}`;
+                        items.push({
+                            title: sub.titleClean,
+                            tabId: tabId,
+                            tabName: tabName,
+                            rowId: uniqueSubRowId,
+                            isSub: false
+                        });
+                    } else if (subLen > 1) {
+                        const uniqueRowId = `${tabId}-row-${row.mainNumber}`;
+                        items.push({
+                            title: row.titleClean,
+                            tabId: tabId,
+                            tabName: tabName,
+                            rowId: uniqueRowId,
+                            isSub: false
+                        });
+                        row.subItems.forEach(sub => {
+                            const uniqueSubRowId = `${tabId}-row-${sub.numberStr.replace('.', '-')}`;
+                            items.push({
+                                title: sub.titleClean,
+                                tabId: tabId,
+                                tabName: tabName,
+                                rowId: uniqueSubRowId,
+                                isSub: true,
+                                parentId: uniqueRowId
+                            });
+                        });
+                    } else {
+                        const uniqueRowId = `${tabId}-row-${row.mainNumber}`;
+                        items.push({
+                            title: row.titleClean,
+                            tabId: tabId,
+                            tabName: tabName,
+                            rowId: uniqueRowId,
+                            isSub: false
+                        });
+                    }
+                });
+            });
+            return items;
+        }
+
+        function handleSearchInput() {
+            const activeTab = document.getElementById('tab-' + currentTabId);
+            const searchInput = activeTab ? activeTab.querySelector('#searchInput') : document.getElementById('searchInput');
+            const dropdown = activeTab ? activeTab.querySelector('#searchDropdown') : document.getElementById('searchDropdown');
+
+            if (!searchInput || !dropdown) return;
+
+            const query = searchInput.value.toLowerCase().trim();
+
+            if (!query) {
+                dropdown.classList.remove('active');
+                dropdown.innerHTML = '';
+                return;
+            }
+
+            const allItems = getAllItems();
+            const matches = allItems.filter(item => item.title.toLowerCase().includes(query)).slice(0, 5);
+
+            if (matches.length > 0) {
+                dropdown.innerHTML = '';
+                matches.forEach(match => {
+                    const li = document.createElement('li');
+                    li.className = 'search-dropdown-item';
+                    li.innerHTML = `<span>${match.title}</span><span class="search-item-tab">${match.tabName}</span>`;
+                    li.onclick = () => jumpToResult(match.tabId, match.rowId, match.isSub, match.parentId);
+                    dropdown.appendChild(li);
+                });
+                dropdown.classList.add('active');
+            } else {
+                dropdown.classList.remove('active');
+                dropdown.innerHTML = '';
+            }
+        }
+
+        function jumpToResult(targetTabId, rowId, isSub, parentId) {
+            if (currentTabId !== targetTabId) {
+                switchTab(targetTabId);
+            }
+
+            setTimeout(() => {
+                const activeTab = document.getElementById('tab-' + targetTabId);
+                if (activeTab) {
+                    const searchInput = activeTab.querySelector('#searchInput');
+                    const dropdown = activeTab.querySelector('#searchDropdown');
+                    if (searchInput) searchInput.value = '';
+                    if (dropdown) dropdown.classList.remove('active');
+                }
+
+                if (isSub) {
+                    const subRows = document.querySelectorAll(`.sub-accordion-row[data-parent="${parentId}"]`);
+                    if (subRows.length > 0 && !subRows[0].classList.contains('open')) {
+                        subRows.forEach(sr => sr.classList.add('open'));
+                        const parentTr = document.querySelector(`tr[data-id="${parentId}"]`);
+                        if (parentTr) {
+                            const btnSpan = parentTr.querySelector('.arrow');
+                            if (btnSpan) btnSpan.style.transform = 'rotate(90deg)';
+                        }
+                    }
+
+                    setTimeout(() => {
+                        const targetRow = document.querySelector(`tr[data-id="${rowId}"]`);
+                        if (targetRow) {
+                            targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            targetRow.classList.add('highlight-target');
+                            setTimeout(() => targetRow.classList.remove('highlight-target'), 2000);
+                        }
+                    }, 50);
+
+                } else {
+                    const targetRow = document.querySelector(`tr[data-id="${rowId}"]`);
+                    if (targetRow) {
+                        targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        targetRow.classList.add('highlight-target');
+                        setTimeout(() => targetRow.classList.remove('highlight-target'), 2000);
+                    }
+                }
+            }, 50);
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-controls')) {
+                document.querySelectorAll('.search-dropdown').forEach(dd => dd.classList.remove('active'));
+            }
+        });
+
+        function applySort() {
+            if (!currentTabId || !appData[currentTabId]) return;
+            const activeTab = document.getElementById('tab-' + currentTabId);
+            if (!activeTab) return;
+            
+            const sortSelect = activeTab.querySelector('#sortSelect');
+            const sortMode = sortSelect ? sortSelect.value : 'default';
+            const tbody = activeTab.querySelector('tbody');
+            if (!tbody) return;
+            
+            const mainRows = Array.from(tbody.querySelectorAll('tr:not(.sub-accordion-row)'));
+            let pairs = mainRows.map(row => {
+                const dataId = row.getAttribute('data-id');
+                const subRows = Array.from(tbody.querySelectorAll(`.sub-accordion-row[data-parent="${dataId}"]`));
+                const rating = parseFloat(row.getAttribute('data-rating')) || 0;
+                const originalIndex = parseInt(row.getAttribute('data-original-index')) || 0;
+                return { row, subRows, rating, originalIndex };
+            });
+
+            if (sortMode === 'desc') {
+                pairs.sort((a, b) => b.rating - a.rating);
+            } else if (sortMode === 'asc') {
+                pairs.sort((a, b) => a.rating - b.rating);
+            } else {
+                pairs.sort((a, b) => a.originalIndex - b.originalIndex);
+            }
+
+            pairs.forEach(pair => {
+                tbody.appendChild(pair.row);
+                pair.subRows.forEach(sr => tbody.appendChild(sr));
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
